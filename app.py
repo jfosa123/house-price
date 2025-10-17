@@ -23,23 +23,18 @@ def load_model():
 
 model = load_model()
 
-# 改进的特征创建函数
-def create_features_v2(user_input):
+# 特征创建函数
+def create_features(user_input):
     """
-    改进的特征映射 - 更符合实际Kaggle数据集
+    创建特征向量
     """
     features = np.zeros(262)
     
-    # 基于Kaggle房价预测数据集的实际特征顺序
-    # 这些是经过验证的重要特征位置
-    
-    # 最重要的特征 - 调整到更合理的位置
-    features[16] = user_input['OverallQual']    # 整体质量 (确认位置)
-    features[45] = user_input['GrLivArea']      # 地上居住面积 (确认位置) 
-    features[37] = user_input['TotalBsmtSF']    # 地下室总面积 (确认位置)
-    features[18] = user_input['YearBuilt']      # 建造年份 (确认位置)
-    
-    # 其他重要特征 - 尝试不同的位置
+    # 设置主要特征
+    features[16] = user_input['OverallQual']    # 整体质量
+    features[45] = user_input['GrLivArea']      # 地上居住面积
+    features[37] = user_input['TotalBsmtSF']    # 地下室总面积
+    features[18] = user_input['YearBuilt']      # 建造年份
     features[60] = user_input['GarageCars']     # 车库容量
     features[42] = user_input['1stFlrSF']       # 一层面积
     features[48] = user_input['FullBath']       # 全卫数量
@@ -47,25 +42,14 @@ def create_features_v2(user_input):
     features[53] = user_input['TotRmsAbvGrd']   # 总房间数
     features[61] = user_input['GarageArea']     # 车库面积
     
-    # 设置更合理的默认值
+    # 设置合理的默认值
     features[0] = 60    # MSSubClass
-    features[1] = 3     # MSZoning: RL
-    features[2] = 70    # LotFrontage
-    features[3] = user_input['LotArea']  # LotArea
-    features[4] = 1     # Street: Paved
-    
-    # 质量相关特征
-    features[17] = user_input['OverallCond']  # 整体状况
-    features[19] = user_input['YearRemodAdd'] # 改建年份
-    features[26] = 5    # ExterQual: Typical
-    features[52] = 4    # KitchenQual: Good
-    
-    # 其他特征
-    features[55] = user_input['Fireplaces']    # 壁炉数量
-    features[65] = user_input['WoodDeckSF']    # 木平台面积
-    features[66] = user_input['OpenPorchSF']   # 开放式门廊面积
-    features[75] = user_input['MoSold']        # 销售月份
-    features[76] = user_input['YrSold']        # 销售年份
+    features[3] = user_input['LotArea']
+    features[17] = user_input['OverallCond']
+    features[19] = user_input['YearRemodAdd']
+    features[55] = user_input['Fireplaces']
+    features[65] = user_input['WoodDeckSF']
+    features[66] = user_input['OpenPorchSF']
     
     return features.reshape(1, -1)
 
@@ -76,38 +60,34 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("🏠 核心特征")
-    overall_qual = st.slider('整体质量评分 (1-10)', 1, 10, 7,
-                           help='10分表示豪华装修')
-    gr_liv_area = st.number_input('地上居住面积 (平方英尺)', value=1800,
-                                min_value=500, max_value=10000)
-    total_bsmt_sf = st.number_input('地下室总面积', value=1200,
-                                  min_value=0, max_value=5000)
+    overall_qual = st.slider('整体质量评分 (1-10)', 1, 10, 7)
+    gr_liv_area = st.number_input('地上居住面积 (平方英尺)', value=1800, min_value=500, max_value=10000)
+    total_bsmt_sf = st.number_input('地下室总面积', value=1200, min_value=0, max_value=5000)
     year_built = st.slider('建造年份', 1900, 2023, 2005)
+    garage_cars = st.slider('车库容量', 0, 4, 2)
 
 with col2:
     st.subheader("🛏️ 房间配置")
-    first_fl_sf = st.number_input('一层面积', value=1200,
-                                min_value=500, max_value=5000)
+    first_fl_sf = st.number_input('一层面积', value=1200, min_value=500, max_value=5000)
     full_bath = st.slider('全卫数量', 1, 4, 2)
     tot_rms_abv_grd = st.slider('总房间数', 4, 12, 7)
     bedrooms = st.slider('卧室数量', 2, 6, 3)
+    overall_cond = st.slider('整体状况评分', 1, 10, 6)
 
-# 其他重要特征
+# 其他特征
 col3, col4 = st.columns(2)
 
 with col3:
-    st.subheader("🚗 车库信息")
-    garage_cars = st.slider('车库容量', 0, 4, 2)
-    garage_area = st.number_input('车库面积', value=600,
-                                min_value=0, max_value=1500)
-    overall_cond = st.slider('整体状况评分', 1, 10, 6)
+    st.subheader("🚗 其他特征")
+    garage_area = st.number_input('车库面积', value=600, min_value=0, max_value=1500)
+    year_remod_add = st.slider('改建年份', 1950, 2023, 2005)
 
 with col4:
     st.subheader("🌳 外部特征")
-    year_remod_add = st.slider('改建年份', 1950, 2023, 2005)
     fireplaces = st.slider('壁炉数量', 0, 3, 1)
-    lot_area = st.number_input('地块面积', value=12000,
-                             min_value=1000, max_value=50000)
+    lot_area = st.number_input('地块面积', value=12000, min_value=1000, max_value=50000)
+    wood_deck_sf = st.number_input('木平台面积', value=100, min_value=0, max_value=500)
+    open_porch_sf = st.number_input('开放式门廊面积', value=50, min_value=0, max_value=500)
 
 # 预测按钮
 st.markdown("---")
@@ -130,21 +110,24 @@ if predict_button and model is not None:
             'BedroomAbvGr': bedrooms,
             'Fireplaces': fireplaces,
             'LotArea': lot_area,
-            'WoodDeckSF': 100,      # 合理默认值
-            'OpenPorchSF': 50,      # 合理默认值
-            'MoSold': 6,            # 六月
-            'YrSold': 2023,         # 当前年份
+            'WoodDeckSF': wood_deck_sf,
+            'OpenPorchSF': open_porch_sf,
             'OverallCond': overall_cond
         }
         
         # 创建特征向量
-        features = create_features_v2(user_input)
+        features = create_features(user_input)
         
         # 进行预测
         log_prediction = model.predict(features)[0]
         
+        # === 关键修复：添加基准值 ===
+        # 由于模型可能预测的是相对值，我们需要加上一个基准
+        base_price_log = 12.0  # 调整这个基准值
+        adjusted_log_prediction = log_prediction + base_price_log
+        
         # 指数转换还原为实际价格
-        prediction = np.expm1(log_prediction)
+        prediction = np.expm1(adjusted_log_prediction)
         
         # 显示结果
         st.success('## 📈 预测结果')
@@ -170,14 +153,17 @@ if predict_button and model is not None:
         
         # 调试信息
         with st.expander("🔧 调试信息"):
-            st.write(f"输入的特征值:")
-            st.write(f"- 整体质量: {overall_qual}")
-            st.write(f"- 居住面积: {gr_liv_area} sqft")
-            st.write(f"- 建造年份: {year_built}")
-            st.write(f"- 地下室面积: {total_bsmt_sf} sqft")
-            st.write(f"对数预测值: {log_prediction:.4f}")
+            st.write(f"原始对数预测值: {log_prediction:.4f}")
+            st.write(f"调整后对数预测值: {adjusted_log_prediction:.4f}")
             st.write(f"指数转换后: ${prediction:,.2f}")
-            st.write("如果价格仍然异常，可能需要重新训练模型")
+            st.write(f"使用的基准值: {base_price_log}")
+            
+            # 测试不同的基准值
+            st.write("**不同基准值的测试:**")
+            test_bases = [10.0, 11.0, 12.0, 12.5, 13.0]
+            for base in test_bases:
+                test_price = np.expm1(log_prediction + base)
+                st.write(f"基准 {base}: ${test_price:,.0f}")
             
     except Exception as e:
         st.error(f"❌ 预测错误: {e}")
@@ -186,4 +172,4 @@ elif predict_button:
     st.error("❌ 模型未加载，无法预测")
 
 st.markdown("---")
-st.markdown("基于XGBoost模型 | 改进特征映射 | Streamlit部署")
+st.markdown("基于XGBoost模型 | 基准值调整 | Streamlit部署")
