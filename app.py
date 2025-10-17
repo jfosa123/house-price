@@ -2,7 +2,54 @@ import streamlit as st
 import pickle
 import numpy as np
 import pandas as pd
+# 添加xgboost导入
+try:
+    import xgboost as xgb
+except ImportError as e:
+    st.error(f"XGBoost导入失败: {e}")
 
+st.set_page_config(page_title="房价预测模型", page_icon="🏠", layout="wide")
+
+# 应用标题
+st.title('🏠 Kaggle房价预测模型')
+st.markdown('基于Kaggle「House Prices: Advanced Regression Techniques」竞赛特征的房价预测系统')
+
+# 加载模型 - 改进的错误处理
+@st.cache_resource
+def load_model():
+    try:
+        with open('house_price_model.pkl', 'rb') as f:
+            model = pickle.load(f)
+        st.success("✅ 模型加载成功！")
+        return model
+    except Exception as e:
+        st.error(f"❌ 加载模型失败: {e}")
+        st.info("""
+        **可能的解决方案:**
+        1. 确保 requirements.txt 中包含 xgboost
+        2. 检查模型文件是否完整
+        3. 确认模型文件路径正确
+        """)
+        return None
+
+model = load_model()
+
+# 如果模型加载失败，显示安装指导
+if model is None:
+    st.warning("""
+    **🔧 修复步骤:**
+    
+    请确保你的 `requirements.txt` 文件包含以下内容:
+    ```
+    streamlit>=1.28.0
+    scikit-learn>=1.3.0
+    numpy>=1.24.0
+    pandas>=2.0.0
+    xgboost>=1.7.0
+    ```
+    
+    然后重新部署到 Streamlit。
+    """)
 st.set_page_config(page_title="房价预测模型", page_icon="🏠", layout="wide")
 
 # 应用标题
